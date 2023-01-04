@@ -1,0 +1,50 @@
+
+/*
+SELECT		TABLE_NAME AS [Имя таблицы],
+			COLUMN_NAME AS [Имя столбца],
+			DATA_TYPE AS [Тип данных столбца],
+			CHARACTER_MAXIMUM_LENGTH,
+			IS_NULLABLE AS [Значения NULL]
+   FROM INFORMATION_SCHEMA.COLUMNS
+WHERE table_name='RContractTable'
+order by 2
+*/
+
+--use[SZDWH]
+-- отображение данных по коду журнала перевозок
+
+DECLARE @JOURNALID nvarchar(10), @DATAAREAID nvarchar(4), @InvoiceId nvarchar(30);
+  SET @DATAAREAID = 'SZ'
+  SET @JOURNALID = '221_062896';
+  SET @InvoiceId = '10220028471' 
+
+select DISTINCT
+  LogisticJournalTable.DATAAREAID
+  ,LogisticJournalTable.JournalId
+  ,LogisticTTNTable.VehicleTTNId -- вывести в олап "Код ТН"
+  ,CARRIERROUTELINE.CUSTACCOUNT
+--  ,LogisticTTNTable.CustAccountConsignee -- грузополучатель по ТН
+  ,CARRIERROUTELINE.CONSIGNEEACCOUNT -- вывести в олап "Код грузополучателя"
+--  ,CarrierRouteLine.InvoiceId
+  ,WMSPickingRoute.StoredInvoiceExternalId
+  ,WMSPickingRoute.SZ_InvoiceIdIssueReceiver
+ -- ,WMSORDERTRANS.ItemId
+--  ,WMSORDERTRANS.INVENTTRANSID
+
+from LogisticJournalTable
+LEFT JOIN CARRIERROUTELINE ON LogisticJournalTable.CARRIERROUTEID	= CARRIERROUTELINE.ROUTEID
+LEFT JOIN LogisticTTNTable ON CARRIERROUTELINE.PARTNERTYPE			= LogisticTTNTable.PARTNERTYPE
+	AND CARRIERROUTELINE.PARTNERACCOUNT = LogisticTTNTable.CUSTACCOUNTCONSIGNEE
+	AND CARRIERROUTELINE.CUSTACCOUNT = LogisticTTNTable.CUSTACCOUNT
+	AND logisticJournalTable.JournalId = logisticTTNTable.LogisiticJournalId
+RIGHT JOIN WMSPICKINGROUTE  ON CARRIERROUTELINE.WMSSHIPMENTID = WMSPICKINGROUTE.SHIPMENTID
+	AND CARRIERROUTELINE.ORDERID = WMSPICKINGROUTE.PICKINGROUTEID
+	AND CARRIERROUTELINE.DATAAREAID = WMSPICKINGROUTE.DATAAREAID
+JOIN WMSORDERTRANS      ON WMSPICKINGROUTE.PICKINGROUTEID = WMSORDERTRANS.ROUTEID
+	AND WMSPICKINGROUTE.DATAAREAID = WMSORDERTRANS.DATAAREAID
+
+WHERE LogisticJournalTable.DATAAREAID = @DATAAREAID
+  AND LogisticJournalTable.JournalId = @JOURNALID
+--  AND CarrierRouteLine.InvoiceId = @InvoiceId
+ORDER BY 6
+
