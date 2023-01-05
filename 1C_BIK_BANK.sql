@@ -9,6 +9,7 @@ SELECT		TABLE_NAME AS [Имя таблицы],
 WHERE table_name='KafkaMessage'
 order by 2
 */
+--
 -- Просмотр журналов интеграции с ошибкой по БИК банка
 select TOP 30 
 	N_IAx1s8xExchangeJournal.RECID
