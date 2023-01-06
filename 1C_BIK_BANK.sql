@@ -1,4 +1,4 @@
-
+--
 /*
 SELECT		TABLE_NAME AS [Имя таблицы],
 			COLUMN_NAME AS [Имя столбца],
