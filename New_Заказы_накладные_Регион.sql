@@ -1,6 +1,6 @@
 ﻿
 DECLARE @DATAAREAID nvarchar(4), @VOUCHER  nvarchar(30),@INVOICEID nvarchar(30), @ITEMID nvarchar(20);
-	SET @DATAAREAID = 'SZ';
+	SET @DATAAREAID = 'SC';
 --	SET @VOUCHER  = '10951805_080';
 	--SET @INVOICEID  = 'СЦ00000186';
 	--SET @ITEMID = '64428';
@@ -64,9 +64,10 @@ select  DISTINCT
 --	, CAST(CustInvoiceTrans.LineAmount AS NUMERIC(20,2)) + CAST(CustInvoiceTrans.TAXAMOUNT AS NUMERIC(20,2)) as Сумма_с_налогом
 --	, CUSTTRANS.AMOUNTCUR
 --	, CUSTTRANS.LEDGERACCOUNT
-	, CustInvoiceJour.SZ_STORNO --= 0
-	, CustInvoiceJour.SZ_STORNED --= 0
-	, SalesTable.AmountTotalExclTax --<> 0
+	, CustInvoiceJour.SZ_STORNO as Сторнирующий_док--= 0
+	, CustInvoiceJour.SZ_STORNED as Сторнирован--= 0
+	, CustInvoiceJour.Correct_RU as Корректировка
+--	, SalesTable.AmountTotalExclTax as Сумма_без_НДС_по_заказу --<> 0
 	, InventDim.INVENTBATCHID as Партия
 	, CUSTINVOICETRANSPURCHREAL31176.PurchRealPrice as РВЦ
 	, InventTable.Vital as ЖВ	
@@ -130,12 +131,12 @@ WHERE
 --	AND AddressState.COUNTRYREGIONID = 'RU'
 --	AND SALESTABLE.SALESID = '00578971_069'
 --	AND SALESTABLE.SALESSTATUS = 3
-AND CustInvoiceJour.InvoiceDate BETWEEN '2022-11-01T00:00:00.000' AND '2023-11-30T00:00:00.000'
+--AND CustInvoiceJour.InvoiceDate BETWEEN '2022-11-01T00:00:00.000' AND '2023-11-30T00:00:00.000'
 --	AND InventTable.TenderInventTradeName LIKE 'ОМНИ%'
 --	AND CustInvoiceTrans.NAME LIKE 'ОМНИ%'
 --	AND SalesTable.CustAccount = 'Кл003100'
 --	AND  SalesTable.SZ_CustAccountTransfer = 'Кл003100'
---	AND CustInvoiceJour.InvoiceExternalId IN ('10220025272') --10220025374
+	AND CustInvoiceJour.InvoiceExternalId IN ('36220000039','36220000134') --10220025374
 --	AND CUSTINVOICEJOUR.INVOICEID = @INVOICEID
 --	AND CustInvoiceJour.SZ_InvoiceIdIssueReceiver = ''
 
