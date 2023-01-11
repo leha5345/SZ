@@ -1,50 +1,70 @@
+п»ї
+DECLARE @JOURNALID nvarchar(10), @DATAAREAID nvarchar(4), @InvoiceId nvarchar(30), @QtyInvoiceExternalId int, @QtyInvoiceIdIssueReceiver int;
+  SET @DATAAREAID = 'SZ';
+  SET @JOURNALID = '221_055258';
+--  SET @InvoiceId = '10220028471' 
 
-/*
-SELECT		TABLE_NAME AS [Имя таблицы],
-			COLUMN_NAME AS [Имя столбца],
-			DATA_TYPE AS [Тип данных столбца],
-			CHARACTER_MAXIMUM_LENGTH,
-			IS_NULLABLE AS [Значения NULL]
-   FROM INFORMATION_SCHEMA.COLUMNS
-WHERE table_name='RContractTable'
-order by 2
-*/
+select 
+	L.DATAAREAID
+	,L.JOURNALID
+	,L.CREATEDDATE
+	,L.Status
+	,L.РўРёРї
+	,L.VEHICLETTNID
+	,L.CUSTACCOUNT
+	,L.CONSIGNEEACCOUNT
+	,L.РљРѕР»_РІРѕ_РЅР°РєР»_РїРѕ_DAX
+	,COUNT(L.STOREDINVOICEEXTERNALID) OVER (PARTITION BY L.DATAAREAID,L.JOURNALID ORDER BY L.JOURNALID) as R -- Р Р°СЃСЃС‡РёС‚Р°РЅРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РЅР°РєР»Р°РґРЅС‹С… РІ Р¶СѓСЂРЅР°Р»Рµ
+	,SUM(CASE WHEN L.SZ_INVOICEIDISSUERECEIVER <> '' THEN 1 ELSE 0 END) OVER (PARTITION BY L.DATAAREAID,L.JOURNALID ORDER BY L.JOURNALID) as R_SUM -- Р Р°СЃСЃС‡РёС‚Р°РЅРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РњРџ РЅР°РєР»Р°РґРЅС‹С… РІ Р¶СѓСЂРЅР°Р»Рµ
+--	,COUNT(NULLIF(L.SZ_INVOICEIDISSUERECEIVER,'')) OVER (PARTITION BY L.DATAAREAID,L.JOURNALID ORDER BY L.JOURNALID) as R_COUNT -- С‚РѕР¶Рµ СЃР°РјРѕРµ С‡С‚Рѕ Рё R_SUM РїСЂРѕСЃС‚Рѕ РґСЂСѓРіРёРј СЃРїРѕСЃРѕР±РѕРј
+	,L.STOREDINVOICEEXTERNALID
+	,L.SZ_INVOICEIDISSUERECEIVER
 
---use[SZDWH]
--- отображение данных по коду журнала перевозок
+from (
+	select DISTINCT
+		LogisticJournalTable.DATAAREAID
+		,LogisticJournalTable.JournalId
+		,CONVERT(date,LogisticJournalTable.CREATEDDATETIME,103) as CREATEDDATE
+		,CASE 
+			WHEN LogisticJournalTable.JournalStatus = 2 THEN 'Р“СЂСѓР· РїРѕРіСЂСѓР¶РµРЅ'
+			WHEN LogisticJournalTable.JournalStatus = 9 THEN 'РџСЂРѕРµРєС‚'
+		 END as Status
+		,CASE 
+			WHEN CARRIERROUTELINE.PARTNERTYPE = 0 THEN 'РљР»РёРµРЅС‚'
+			WHEN CARRIERROUTELINE.PARTNERTYPE = 1 THEN 'РџРѕСЃС‚Р°РІС‰РёРє'
+		 END as РўРёРї
+		,LogisticTTNTable.VehicleTTNId -- РІС‹РІРµСЃС‚Рё РІ РѕР»Р°Рї "РљРѕРґ РўРќ"
+		,CARRIERROUTELINE.CUSTACCOUNT
+	--  ,LogisticTTNTable.CustAccountConsignee -- РіСЂСѓР·РѕРїРѕР»СѓС‡Р°С‚РµР»СЊ РїРѕ РўРќ
+		,CARRIERROUTELINE.CONSIGNEEACCOUNT -- РІС‹РІРµСЃС‚Рё РІ РѕР»Р°Рї "РљРѕРґ РіСЂСѓР·РѕРїРѕР»СѓС‡Р°С‚РµР»СЏ"
+	--  ,CarrierRouteLine.InvoiceId
+		,LogisticJournalTable.OutgoingCarrierRouteQty as РљРѕР»_РІРѕ_РЅР°РєР»_РїРѕ_DAX
+		,WMSPickingRoute.SZ_LogisticJournalId
+		,WMSPickingRoute.StoredInvoiceExternalId
+		,WMSPickingRoute.SZ_InvoiceIdIssueReceiver
+		
 
-DECLARE @JOURNALID nvarchar(10), @DATAAREAID nvarchar(4), @InvoiceId nvarchar(30);
-  SET @DATAAREAID = 'SZ'
-  SET @JOURNALID = '221_062896';
-  SET @InvoiceId = '10220028471' 
+	--	,ROW_NUMBER (WMSPickingRoute.SZ_InvoiceIdIssueReceiver) OVER (PARTITION BY LogisticJournalTable.DATAAREAID,LogisticJournalTable.JOURNALID ORDER BY LogisticJournalTable.DATAAREAID,LogisticJournalTable.JOURNALID) as Row
+	--	,COUNT(WMSPickingRoute.SZ_InvoiceIdIssueReceiver) OVER (PARTITION BY LogisticJournalTable.DATAAREAID,LogisticJournalTable.JournalId,WMSPickingRoute.SZ_LogisticJournalId) as QTY_MPInvoice
+	 -- ,WMSORDERTRANS.ItemId
+	--  ,WMSORDERTRANS.INVENTTRANSID
 
-select DISTINCT
-  LogisticJournalTable.DATAAREAID
-  ,LogisticJournalTable.JournalId
-  ,LogisticTTNTable.VehicleTTNId -- вывести в олап "Код ТН"
-  ,CARRIERROUTELINE.CUSTACCOUNT
---  ,LogisticTTNTable.CustAccountConsignee -- грузополучатель по ТН
-  ,CARRIERROUTELINE.CONSIGNEEACCOUNT -- вывести в олап "Код грузополучателя"
---  ,CarrierRouteLine.InvoiceId
-  ,WMSPickingRoute.StoredInvoiceExternalId
-  ,WMSPickingRoute.SZ_InvoiceIdIssueReceiver
- -- ,WMSORDERTRANS.ItemId
---  ,WMSORDERTRANS.INVENTTRANSID
+	from LogisticJournalTable
+	LEFT JOIN CARRIERROUTELINE ON LogisticJournalTable.CARRIERROUTEID	= CARRIERROUTELINE.ROUTEID
+		AND CARRIERROUTELINE.DATAAREAID = LogisticJournalTable.DATAAREAID
+	LEFT JOIN LogisticTTNTable ON CARRIERROUTELINE.PARTNERTYPE			= LogisticTTNTable.PARTNERTYPE
+		AND CARRIERROUTELINE.PARTNERACCOUNT = LogisticTTNTable.CUSTACCOUNTCONSIGNEE
+		AND CARRIERROUTELINE.CUSTACCOUNT = LogisticTTNTable.CUSTACCOUNT
+		AND logisticJournalTable.JournalId = logisticTTNTable.LogisiticJournalId
+	RIGHT JOIN WMSPICKINGROUTE  ON CARRIERROUTELINE.WMSSHIPMENTID = WMSPICKINGROUTE.SHIPMENTID
+		AND CARRIERROUTELINE.ORDERID = WMSPICKINGROUTE.PICKINGROUTEID
+		AND CARRIERROUTELINE.DATAAREAID = WMSPICKINGROUTE.DATAAREAID
+	JOIN WMSORDERTRANS      ON WMSPICKINGROUTE.PICKINGROUTEID = WMSORDERTRANS.ROUTEID
+		AND WMSPICKINGROUTE.DATAAREAID = WMSORDERTRANS.DATAAREAID
 
-from LogisticJournalTable
-LEFT JOIN CARRIERROUTELINE ON LogisticJournalTable.CARRIERROUTEID	= CARRIERROUTELINE.ROUTEID
-LEFT JOIN LogisticTTNTable ON CARRIERROUTELINE.PARTNERTYPE			= LogisticTTNTable.PARTNERTYPE
-	AND CARRIERROUTELINE.PARTNERACCOUNT = LogisticTTNTable.CUSTACCOUNTCONSIGNEE
-	AND CARRIERROUTELINE.CUSTACCOUNT = LogisticTTNTable.CUSTACCOUNT
-	AND logisticJournalTable.JournalId = logisticTTNTable.LogisiticJournalId
-RIGHT JOIN WMSPICKINGROUTE  ON CARRIERROUTELINE.WMSSHIPMENTID = WMSPICKINGROUTE.SHIPMENTID
-	AND CARRIERROUTELINE.ORDERID = WMSPICKINGROUTE.PICKINGROUTEID
-	AND CARRIERROUTELINE.DATAAREAID = WMSPICKINGROUTE.DATAAREAID
-JOIN WMSORDERTRANS      ON WMSPICKINGROUTE.PICKINGROUTEID = WMSORDERTRANS.ROUTEID
-	AND WMSPICKINGROUTE.DATAAREAID = WMSORDERTRANS.DATAAREAID
-
-WHERE LogisticJournalTable.DATAAREAID = @DATAAREAID
-  AND LogisticJournalTable.JournalId = @JOURNALID
---  AND CarrierRouteLine.InvoiceId = @InvoiceId
-ORDER BY 6
-
+	WHERE LogisticJournalTable.DATAAREAID = @DATAAREAID
+		AND LogisticJournalTable.CREATEDDATETIME > '2022-01-01T00:00:00.000'
+	--	AND LogisticJournalTable.JournalId = @JOURNALID
+	--  AND CarrierRouteLine.InvoiceId = @InvoiceId
+	) as L
+ORDER BY 2
