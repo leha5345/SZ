@@ -1,23 +1,29 @@
-DECLARE @TENDERTABLEID nvarchar(20),@REFTABLEIDSOURCE int, @REGNUMBER nvarchar(19) ;
-	SET @REFTABLEIDSOURCE = 30968 --тендеры
-	SET @TENDERTABLEID = '066777_268'
-	SET @REGNUMBER = (select SUBSTRING(Out.decoded_value,CHARINDEX('RegNumber',Out.decoded_value)+13,19) as REG from (select cast(dbo.fn_Base64ToBinary(VALUEBASE64)  as varchar(max)) as [decoded_value] from KafkaMessage LEFT JOIN TENDERTABLE ON KafkaMessage.REFRECIDSOURSE = TENDERTABLE.RECID AND KafkaMessage.REFTABLEIDSOURCE = @REFTABLEIDSOURCE WHERE KafkaMessage.Direction = 10 AND TENDERTABLE.TENDERTABLEID = @TENDERTABLEID) as Out);
+п»ї
+-- РїСЂРѕСЃРјРѕС‚СЂС‹ Р·Р°РїСЂРѕСЃРѕРІ РєРѕРЅС‚СЂР°РєС‚Р° Р•РРЎ РїРѕ РєР°СЂС‚РѕС‡РєРµ С‚РµРЅРґРµСЂР°
+-- РґР»СЏ РїСЂРѕСЃРјРѕС‚СЂР° Р·Р°РїСЂРѕСЃРѕРІ РІ РїРµСЂРµРјРµРЅРЅСѓСЋ @TENDERTABLEID СѓРєР°Р·Р°С‚СЊ РЅРѕРјРµСЂ РєР°СЂС‚РѕС‡РєРё С‚РµРЅРґРµСЂР°
 
--- Найти по рег номеру контракт
+DECLARE @TENDERTABLEID nvarchar(20),@REFTABLEIDSOURCE int, @REGNUMBER nvarchar(19) ;
+	SET @REFTABLEIDSOURCE = 30968 -- РЅРёС‡РµРіРѕ РЅРµ РјРµРЅСЏС‚СЊ, 30968 СЌС‚Рѕ С‚Р°Р±Р»РёС†Р° С‚РµРЅРґРµСЂРѕРІ С‚РµРЅРґРµСЂС‹
+	SET @TENDERTABLEID = '070732_268' -- СЃСЋРґР° СѓРєР°Р·Р°С‚СЊ РЅРѕРјРµСЂ РљРў
+	SET @REGNUMBER = (select SUBSTRING(Out.decoded_value,CHARINDEX('RegNumber',Out.decoded_value)+13,19) as REG from (select cast(dbo.fn_Base64ToBinary(VALUEBASE64)  as varchar(max)) as [decoded_value] from KafkaMessage LEFT JOIN TENDERTABLE ON KafkaMessage.REFRECIDSOURSE = TENDERTABLE.RECID AND KafkaMessage.REFTABLEIDSOURCE = @REFTABLEIDSOURCE WHERE KafkaMessage.Direction = 10 AND TENDERTABLE.TENDERTABLEID = @TENDERTABLEID) as Out);
+/*
+-- РќР°Р№С‚Рё РїРѕ СЂРµРі РЅРѕРјРµСЂСѓ РєРѕРЅС‚СЂР°РєС‚
 select DATAAREAID,RContractAccount,RegistryEntryNumber,TenderTableId from RContractTable WHERE RegistryEntryNumber = @REGNUMBER
--- Посмотреть есть ли сопоставление для ЕИС контракта
+
+-- РџРѕСЃРјРѕС‚СЂРµС‚СЊ РµСЃС‚СЊ Р»Рё СЃРѕРїРѕСЃС‚Р°РІР»РµРЅРёРµ Р•РРЎ РєРѕРЅС‚СЂР°РєС‚Р° СЃ РєР°СЂС‚РѕС‡РєРѕР№ С‚РµРЅРґРµСЂР°
 select EISContractPackage.COMPANYSOURCE
 	,EISContract.VERSIONNUMBER
 	,EISContractPackage.RECID
 	,EISContractPackage.PACKAGEID
 	,EISContractPackage.REGNUMBER
-	,EISContractPackage.TENDERTABLEID
-	,EISContract.TENDERTABLEID
+	,EISContractPackage.TENDERTABLEID -- РµСЃР»Рё С‚СѓС‚ РїСѓСЃС‚Рѕ Р·РЅР°С‡РёС‚ СЃРѕРїРѕСЃС‚Р°РІР»РµРЅРёСЏ СЃ Р•РРЎ РєРѕРЅС‚СЂР°РєС‚РѕРј РЅРµС‚Сѓ 
+	,EISContract.TENDERTABLEID -- РµСЃР»Рё С‚СѓС‚ РїСѓСЃС‚Рѕ С‚Рѕ СЃ РІРµСЂСЃРёСЏРјРё РєРѕРЅС‚СЂР°РєС‚Р° Р•РРЎ РЅРµС‚Сѓ
 	from EISContractPackage 
 LEFT JOIN EISContract ON EISContractPackage.PACKAGEID = EISContract.PACKAGEID
 WHERE EISContractPackage.REGNUMBER = @REGNUMBER OR EISContract.REGNUMBER = @REGNUMBER
 order by 1,2
---Просмотр статус запросов ЕИС контрактов в KafkaMessage
+*/
+--РџСЂРѕСЃРјРѕС‚СЂ СЃС‚Р°С‚СѓСЃ Р·Р°РїСЂРѕСЃРѕРІ Р•РРЎ РєРѕРЅС‚СЂР°РєС‚РѕРІ РІ KafkaMessage
 select 
 	Out.RECID,
 	Out.COMPANYSOURCE as COMPANY,
@@ -29,13 +35,13 @@ select
 --	Out.TRANSACTIONID,
 	SUBSTRING(Out.decoded_value,CHARINDEX('RegNumber',Out.decoded_value)+13,19) as REG,
 --	Out.decoded_value,
-	'//////' as Разделитель,
+	'////' as Р Р°Р·РґРµР»РёС‚РµР»СЊ, -- СЃРїСЂР°РІР° РѕС‚ СЌС‚РѕРіРѕ СЃС‚РѕР»Р±С†Р° РґРѕР»Р¶РµРЅ РѕС‚РѕР±СЂР°Р·РёС‚СЊСЃСЏ РѕС‚РІРµС‚ РЅР° Р·Р°РїСЂРѕСЃ
 	Bxx.RECID as BxxRECID,
 	Bxx.Direction,
 	Bxx.KafkaRecordStatus,
 	Bxx.CREATEDDATETIME,
 --	Bxx.REFTRANSACTIONID,
-	Bxx.decoded_value
+	Bxx.decoded_value		-- РµСЃР»Рё РІ СЌС‚РѕРј РїРѕР»Рµ РЅРµС‡РёС‚Р°РµРјС‹Рµ СЃРёРјРІРѕР»С‹, С‚Рѕ РєР»Р°СЃСЃ РїРѕРёСЃРєР° РІ Р•РРЎ РЅРµ РЅР°С€РµР» РєРѕРЅС‚СЂР°РєС‚
 
 from (
 select 
@@ -44,29 +50,29 @@ select
   TENDERTABLE.RECID as TENDER_RECID,
   KafkaMessage.REFRECIDSOURSE as Kafka_SOURSE,
   CASE 
-		WHEN KafkaMessage.Direction = 10 THEN 'Исходящий'
-		WHEN KafkaMessage.Direction = 5 THEN 'Входящий'
+		WHEN KafkaMessage.Direction = 10 THEN 'РСЃС…РѕРґСЏС‰РёР№'
+		WHEN KafkaMessage.Direction = 5 THEN 'Р’С…РѕРґСЏС‰РёР№'
   END as Direction,
   CASE 
-		WHEN KafkaMessage.KafkaRecordStatus = 0 THEN 'Новое' 
-		WHEN KafkaMessage.KafkaRecordStatus = 1 THEN 'В процессе'
-		WHEN KafkaMessage.KafkaRecordStatus = 2 THEN 'Обработано'
-		WHEN KafkaMessage.KafkaRecordStatus = 3 THEN 'Часть'
-		WHEN KafkaMessage.KafkaRecordStatus = 100 THEN 'Ошибка'
+		WHEN KafkaMessage.KafkaRecordStatus = 0 THEN 'РќРѕРІРѕРµ' 
+		WHEN KafkaMessage.KafkaRecordStatus = 1 THEN 'Р’ РїСЂРѕС†РµСЃСЃРµ'
+		WHEN KafkaMessage.KafkaRecordStatus = 2 THEN 'РћР±СЂР°Р±РѕС‚Р°РЅРѕ'
+		WHEN KafkaMessage.KafkaRecordStatus = 3 THEN 'Р§Р°СЃС‚СЊ'
+		WHEN KafkaMessage.KafkaRecordStatus = 100 THEN 'РћС€РёР±РєР°'
   END as KafkaRecordStatus,
   CASE 
-		WHEN KafkaMessage.ExchangeChannel = 0 THEN 'Центр интеграции' 
-		WHEN KafkaMessage.ExchangeChannel = 1 THEN 'МДЛП'
-		WHEN KafkaMessage.ExchangeChannel = 2 THEN 'ЕИС'
+		WHEN KafkaMessage.ExchangeChannel = 0 THEN 'Р¦РµРЅС‚СЂ РёРЅС‚РµРіСЂР°С†РёРё' 
+		WHEN KafkaMessage.ExchangeChannel = 1 THEN 'РњР”Р›Рџ'
+		WHEN KafkaMessage.ExchangeChannel = 2 THEN 'Р•РРЎ'
   END as ExchangeChannel,
   CASE 
-		WHEN KafkaMessage.EISType = 0 THEN 'Пусто' 
-		WHEN KafkaMessage.EISType = 1 THEN 'Информация о контрагенте'
-		WHEN KafkaMessage.EISType = 2 THEN 'Контракт(ы)'
-		WHEN KafkaMessage.EISType = 3 THEN 'Список документов по контракту'
-		WHEN KafkaMessage.EISType = 4 THEN 'Данные по документу'
-		WHEN KafkaMessage.EISType = 100 THEN 'Входящий пакет документов'
-		WHEN KafkaMessage.EISType = 101 THEN 'Исходящий пакет документов'
+		WHEN KafkaMessage.EISType = 0 THEN 'РџСѓСЃС‚Рѕ' 
+		WHEN KafkaMessage.EISType = 1 THEN 'РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РєРѕРЅС‚СЂР°РіРµРЅС‚Рµ'
+		WHEN KafkaMessage.EISType = 2 THEN 'РљРѕРЅС‚СЂР°РєС‚(С‹)'
+		WHEN KafkaMessage.EISType = 3 THEN 'РЎРїРёСЃРѕРє РґРѕРєСѓРјРµРЅС‚РѕРІ РїРѕ РєРѕРЅС‚СЂР°РєС‚Сѓ'
+		WHEN KafkaMessage.EISType = 4 THEN 'Р”Р°РЅРЅС‹Рµ РїРѕ РґРѕРєСѓРјРµРЅС‚Сѓ'
+		WHEN KafkaMessage.EISType = 100 THEN 'Р’С…РѕРґСЏС‰РёР№ РїР°РєРµС‚ РґРѕРєСѓРјРµРЅС‚РѕРІ'
+		WHEN KafkaMessage.EISType = 101 THEN 'РСЃС…РѕРґСЏС‰РёР№ РїР°РєРµС‚ РґРѕРєСѓРјРµРЅС‚РѕРІ'
 		WHEN KafkaMessage.EISType = 200 THEN 'Error'
   END as EISType,
   KafkaMessage.COMPANYSOURCE,
@@ -97,29 +103,29 @@ select
 	select 
 	  KafkaMessage.RECID,
 	  CASE 
-			WHEN KafkaMessage.Direction = 10 THEN 'Исходящий'
-			WHEN KafkaMessage.Direction = 5 THEN 'Входящий'
+			WHEN KafkaMessage.Direction = 10 THEN 'РСЃС…РѕРґСЏС‰РёР№'
+			WHEN KafkaMessage.Direction = 5 THEN 'Р’С…РѕРґСЏС‰РёР№'
 	  END as Direction,
 	  CASE 
-			WHEN KafkaMessage.KafkaRecordStatus = 0 THEN 'Новое' 
-			WHEN KafkaMessage.KafkaRecordStatus = 1 THEN 'В процессе'
-			WHEN KafkaMessage.KafkaRecordStatus = 2 THEN 'Обработано'
-			WHEN KafkaMessage.KafkaRecordStatus = 3 THEN 'Часть'
-			WHEN KafkaMessage.KafkaRecordStatus = 100 THEN 'Ошибка'
+			WHEN KafkaMessage.KafkaRecordStatus = 0 THEN 'РќРѕРІРѕРµ' 
+			WHEN KafkaMessage.KafkaRecordStatus = 1 THEN 'Р’ РїСЂРѕС†РµСЃСЃРµ'
+			WHEN KafkaMessage.KafkaRecordStatus = 2 THEN 'РћР±СЂР°Р±РѕС‚Р°РЅРѕ'
+			WHEN KafkaMessage.KafkaRecordStatus = 3 THEN 'Р§Р°СЃС‚СЊ'
+			WHEN KafkaMessage.KafkaRecordStatus = 100 THEN 'РћС€РёР±РєР°'
 	  END as KafkaRecordStatus,
 	  CASE 
-			WHEN KafkaMessage.ExchangeChannel = 0 THEN 'Центр интеграции' 
-			WHEN KafkaMessage.ExchangeChannel = 1 THEN 'МДЛП'
-			WHEN KafkaMessage.ExchangeChannel = 2 THEN 'ЕИС'
+			WHEN KafkaMessage.ExchangeChannel = 0 THEN 'Р¦РµРЅС‚СЂ РёРЅС‚РµРіСЂР°С†РёРё' 
+			WHEN KafkaMessage.ExchangeChannel = 1 THEN 'РњР”Р›Рџ'
+			WHEN KafkaMessage.ExchangeChannel = 2 THEN 'Р•РРЎ'
 	  END as ExchangeChannel,
 	  CASE 
-			WHEN KafkaMessage.EISType = 0 THEN 'Пусто' 
-			WHEN KafkaMessage.EISType = 1 THEN 'Информация о контрагенте'
-			WHEN KafkaMessage.EISType = 2 THEN 'Контракт(ы)'
-			WHEN KafkaMessage.EISType = 3 THEN 'Список документов по контракту'
-			WHEN KafkaMessage.EISType = 4 THEN 'Данные по документу'
-			WHEN KafkaMessage.EISType = 100 THEN 'Входящий пакет документов'
-			WHEN KafkaMessage.EISType = 101 THEN 'Исходящий пакет документов'
+			WHEN KafkaMessage.EISType = 0 THEN 'РџСѓСЃС‚Рѕ' 
+			WHEN KafkaMessage.EISType = 1 THEN 'РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РєРѕРЅС‚СЂР°РіРµРЅС‚Рµ'
+			WHEN KafkaMessage.EISType = 2 THEN 'РљРѕРЅС‚СЂР°РєС‚(С‹)'
+			WHEN KafkaMessage.EISType = 3 THEN 'РЎРїРёСЃРѕРє РґРѕРєСѓРјРµРЅС‚РѕРІ РїРѕ РєРѕРЅС‚СЂР°РєС‚Сѓ'
+			WHEN KafkaMessage.EISType = 4 THEN 'Р”Р°РЅРЅС‹Рµ РїРѕ РґРѕРєСѓРјРµРЅС‚Сѓ'
+			WHEN KafkaMessage.EISType = 100 THEN 'Р’С…РѕРґСЏС‰РёР№ РїР°РєРµС‚ РґРѕРєСѓРјРµРЅС‚РѕРІ'
+			WHEN KafkaMessage.EISType = 101 THEN 'РСЃС…РѕРґСЏС‰РёР№ РїР°РєРµС‚ РґРѕРєСѓРјРµРЅС‚РѕРІ'
 			WHEN KafkaMessage.EISType = 200 THEN 'Error'
 	  END as EISType,
 	  KafkaMessage.COMPANYSOURCE,
