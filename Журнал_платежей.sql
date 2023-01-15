@@ -14,11 +14,21 @@ order by 2
 
 select 
 	LedgerJournalTrans.JOURNALNUM
-	,LedgerJournalTrans.TransDate
-	,LedgerJournalTrans.AccountNum	--	AccountNum 57.01
+--	,LedgerJournalTrans.TransDate
+	,LedgerJournalTrans.BankChequeNum as Номер_документа
+	,CONVERT(date,LedgerJournalTrans.DOCUMENTDATE,103) as Дата_документа
+	,LedgerJournalTrans.BankCentralBankPurposeText as Назначение_платежа
+	,CASE 
+		WHEN LedgerJournalTrans.PaymentStatus = 2 THEN 'Отправлено'
+		WHEN LedgerJournalTrans.PaymentStatus = 3 THEN 'Утверждено'
+		WHEN LedgerJournalTrans.PaymentStatus = 4 THEN 'Аннулировано'
+		WHEN LedgerJournalTrans.PaymentStatus = 5 THEN 'Получено'
+		WHEN LedgerJournalTrans.PaymentStatus = 6 THEN 'Удалить'
+		WHEN LedgerJournalTrans.PaymentStatus = 7 THEN 'Удаленные_отправленные'
+		WHEN LedgerJournalTrans.PaymentStatus = 8 THEN 'Удалено'
+	END as Статус_оплаты
 	,LedgerJournalTrans.PostingProfile
-	,LedgerJournalTrans.DocumentDate
-	,LedgerJournalTrans.DocumentNum
+	,LedgerJournalTrans.AccountNum	--	AccountNum 57.01
 	,CASE 
 		WHEN LedgerJournalTrans.ACCOUNTTYPE = '0' THEN 'Главная книга' 
 		WHEN LedgerJournalTrans.ACCOUNTTYPE = '1' THEN 'Клиент'
@@ -26,11 +36,10 @@ select
 		WHEN LedgerJournalTrans.ACCOUNTTYPE = '6' THEN 'Банк'
 	 END as Тип_номенклатуры
 	,LedgerJournalTrans.RCONTRACTACCOUNTDEBIT
-	,LedgerJournalTrans.RCONTRACTCOMPANYCREDIT
+--	,LedgerJournalTrans.RCONTRACTCOMPANYCREDIT
 	,LedgerJournalTrans.AmountCurDebit
 	,LedgerJournalTrans.AmountCurCredit
---	,LedgerJournalTrans.BankCentralBankPurposeText
-	,LedgerJournalTrans.TXT
+--	,LedgerJournalTrans.TXT
 from LedgerJournalTrans
 JOIN RContractTable		ON LedgerJournalTrans.RCONTRACTACCOUNTDEBIT	= RContractTable.RContractAccount
 	AND LedgerJournalTrans.DATAAREAID = RContractTable.DATAAREAID
