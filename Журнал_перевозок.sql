@@ -2,7 +2,7 @@
 DECLARE @JOURNALID nvarchar(10), @DATAAREAID nvarchar(4), @InvoiceId nvarchar(30), @QtyInvoiceExternalId int, @QtyInvoiceIdIssueReceiver int;
   SET @DATAAREAID = 'SZ';
   SET @JOURNALID = '221_055258';
---  SET @InvoiceId = '10220028471' 
+  SET @InvoiceId = '14220004098' 
 
 select 
 	L.DATAAREAID
@@ -19,6 +19,8 @@ select
 --	,COUNT(NULLIF(L.SZ_INVOICEIDISSUERECEIVER,'')) OVER (PARTITION BY L.DATAAREAID,L.JOURNALID ORDER BY L.JOURNALID) as R_COUNT -- тоже самое что и R_SUM просто другим способом
 	,L.STOREDINVOICEEXTERNALID
 	,L.SZ_INVOICEIDISSUERECEIVER
+	,L.ITEMID
+	,L.INVENTTRANSID
 
 from (
 	select DISTINCT
@@ -42,6 +44,8 @@ from (
 		,WMSPickingRoute.SZ_LogisticJournalId
 		,WMSPickingRoute.StoredInvoiceExternalId
 		,WMSPickingRoute.SZ_InvoiceIdIssueReceiver
+		,WMSORDERTRANS.ITEMID
+		,WMSORDERTRANS.INVENTTRANSID
 		
 
 	--	,ROW_NUMBER (WMSPickingRoute.SZ_InvoiceIdIssueReceiver) OVER (PARTITION BY LogisticJournalTable.DATAAREAID,LogisticJournalTable.JOURNALID ORDER BY LogisticJournalTable.DATAAREAID,LogisticJournalTable.JOURNALID) as Row
@@ -62,9 +66,11 @@ from (
 	JOIN WMSORDERTRANS      ON WMSPICKINGROUTE.PICKINGROUTEID = WMSORDERTRANS.ROUTEID
 		AND WMSPICKINGROUTE.DATAAREAID = WMSORDERTRANS.DATAAREAID
 
-	WHERE LogisticJournalTable.DATAAREAID = @DATAAREAID
-		AND LogisticJournalTable.CREATEDDATETIME > '2022-01-01T00:00:00.000'
+	WHERE 
+	--	LogisticJournalTable.DATAAREAID = @DATAAREAID
+	--	AND LogisticJournalTable.CREATEDDATETIME > '2022-01-01T00:00:00.000'
 	--	AND LogisticJournalTable.JournalId = @JOURNALID
-	--  AND CarrierRouteLine.InvoiceId = @InvoiceId
+	--  AND 
+	  CarrierRouteLine.InvoiceId = @InvoiceId
 	) as L
 ORDER BY 2
