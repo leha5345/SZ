@@ -1,4 +1,4 @@
-﻿
+﻿--
 DECLARE @JOURNALID nvarchar(10), @DATAAREAID nvarchar(4), @InvoiceId nvarchar(30), @QtyInvoiceExternalId int, @QtyInvoiceIdIssueReceiver int;
   SET @DATAAREAID = 'SZ';
   SET @JOURNALID = '221_055258';
