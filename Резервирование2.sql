@@ -1,55 +1,55 @@
-
---Просмотр резервирования товара в разрезе складских аналитик
---если запустить по всем товарам без фильтра, то скрипт сожрет всю оперативу на сервере, поэтому в таком варианте на рабочей базе не выполнять
+п»ї
+--РџСЂРѕСЃРјРѕС‚СЂ СЂРµР·РµСЂРІРёСЂРѕРІР°РЅРёСЏ С‚РѕРІР°СЂР° РІ СЂР°Р·СЂРµР·Рµ СЃРєР»Р°РґСЃРєРёС… Р°РЅР°Р»РёС‚РёРє
+--РµСЃР»Рё Р·Р°РїСѓСЃС‚РёС‚СЊ РїРѕ РІСЃРµРј С‚РѕРІР°СЂР°Рј Р±РµР· С„РёР»СЊС‚СЂР°, С‚Рѕ СЃРєСЂРёРїС‚ СЃРѕР¶СЂРµС‚ РІСЃСЋ РѕРїРµСЂР°С‚РёРІСѓ РЅР° СЃРµСЂРІРµСЂРµ, РїРѕСЌС‚РѕРјСѓ РІ С‚Р°РєРѕРј РІР°СЂРёР°РЅС‚Рµ РЅР° СЂР°Р±РѕС‡РµР№ Р±Р°Р·Рµ РЅРµ РІС‹РїРѕР»РЅСЏС‚СЊ
 
 select DISTINCT
 	INVENTSUM.DATAAREAID
 	, INVENTSUM.ITEMID
 --	,INVENTTABLE.NAMEALIAS
 	,INVENTTABLE.TenderInventInternationalName as MNN
---	,InventTable.ProdVendName as Производитель
+--	,InventTable.ProdVendName as РџСЂРѕРёР·РІРѕРґРёС‚РµР»СЊ
 	,InventTable.VITAL
 --	, INVENTSUM.Closed
-	, INVENTSUM.InventDimId	-- аналитики
+	, INVENTSUM.InventDimId	-- Р°РЅР°Р»РёС‚РёРєРё
 	--, VendInvoiceTrans.PURCHID
 	--, VendInvoiceJour.InvoiceId
-	--, CONVERT(date,VendInvoiceJour.INVOICEDATE,103) as Дата_разноски_Накладной	
-	--, CAST(VendInvoiceTrans.LINEAMOUNT AS DECIMAL(10,2)) as Сумма_по_строке_без_НДС
-	--, CONVERT(date,InventTrans.DateFinancial,103) as Финансовая_дата_проводки	
+	--, CONVERT(date,VendInvoiceJour.INVOICEDATE,103) as Р”Р°С‚Р°_СЂР°Р·РЅРѕСЃРєРё_РќР°РєР»Р°РґРЅРѕР№	
+	--, CAST(VendInvoiceTrans.LINEAMOUNT AS DECIMAL(10,2)) as РЎСѓРјРјР°_РїРѕ_СЃС‚СЂРѕРєРµ_Р±РµР·_РќР”РЎ
+	--, CONVERT(date,InventTrans.DateFinancial,103) as Р¤РёРЅР°РЅСЃРѕРІР°СЏ_РґР°С‚Р°_РїСЂРѕРІРѕРґРєРё	
 	, INVENTDIM.INVENTLOCATIONID
 --	, VendInvoiceTrans.INVENTTRANSID
 	, INVENTDIM.DEPARTMENTID
 	, INVENTDIM.INVENTBATCHID
 	, INVENTDIM.PURCHREQLINEID
 --	, InventDim.InventExpireDate
-	, CONVERT(date,InventDim.InventExpireDate,103) as Срок_годности
-	--, INVENTSUM.Closed		-- если да, то значит товарный остаток закончился, все суммы списаны
---	, INVENTSUM.AvailPhysical	as ФизДоступно
-	, CAST(INVENTSUM.AvailPhysical AS NUMERIC(20,0)) as ФизДоступно
+	, CONVERT(date,InventDim.InventExpireDate,103) as РЎСЂРѕРє_РіРѕРґРЅРѕСЃС‚Рё
+	--, INVENTSUM.Closed		-- РµСЃР»Рё РґР°, С‚Рѕ Р·РЅР°С‡РёС‚ С‚РѕРІР°СЂРЅС‹Р№ РѕСЃС‚Р°С‚РѕРє Р·Р°РєРѕРЅС‡РёР»СЃСЏ, РІСЃРµ СЃСѓРјРјС‹ СЃРїРёСЃР°РЅС‹
+--	, INVENTSUM.AvailPhysical	as Р¤РёР·Р”РѕСЃС‚СѓРїРЅРѕ
+	, CAST(INVENTSUM.AvailPhysical AS NUMERIC(20,0)) as Р¤РёР·Р”РѕСЃС‚СѓРїРЅРѕ
 
---	, INVENTSUM.ReservPhysical as ФизЗарезвировано
-	--, INVENTSUM.LastUpdDatePhysical	-- Физ. дата
-	--, INVENTSUM.LastUpdDateExpected	--Ожидаемая дата
-	--, INVENTSUM.AvailOrdered	-- Доступное общее количество
-	--, INVENTSUM.PostedQty		-- Разнесенное кол-во
-	--, INVENTSUM.PostedValue	-- Фин. сумма
-	--, INVENTSUM.Deducted		-- Отпущено
-	--, INVENTSUM.Received		-- Получено
-	--, INVENTSUM.ReservOrdered	-- Зарезервировано в заказанных
---	, INVENTSUM.OnOrder		-- Заказано
---	, INVENTSUM.Ordered		-- Заказано
-	--, INVENTSUM.Registered	-- Зарегистрировано
-	--, INVENTSUM.Picked		-- Скоплектовано
-	--, INVENTSUM.PhysicalValue	-- Физ. сумма
-	--, INVENTSUM.Arrived		-- Прибыло
-	--, INVENTSUM.PhysicalInvent -- Физические запасы
-	--, INVENTSUM.ClosedQty		-- Физическое открытое количество
-	--, INVENTSUM.PostedValueSecCur_RU	-- Фин. сумма
-	--, INVENTSUM.PhysicalValueSecCur_RU -- Физ. сумма
+--	, INVENTSUM.ReservPhysical as Р¤РёР·Р—Р°СЂРµР·РІРёСЂРѕРІР°РЅРѕ
+	--, INVENTSUM.LastUpdDatePhysical	-- Р¤РёР·. РґР°С‚Р°
+	--, INVENTSUM.LastUpdDateExpected	--РћР¶РёРґР°РµРјР°СЏ РґР°С‚Р°
+	--, INVENTSUM.AvailOrdered	-- Р”РѕСЃС‚СѓРїРЅРѕРµ РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ
+	--, INVENTSUM.PostedQty		-- Р Р°Р·РЅРµСЃРµРЅРЅРѕРµ РєРѕР»-РІРѕ
+	--, INVENTSUM.PostedValue	-- Р¤РёРЅ. СЃСѓРјРјР°
+	--, INVENTSUM.Deducted		-- РћС‚РїСѓС‰РµРЅРѕ
+	--, INVENTSUM.Received		-- РџРѕР»СѓС‡РµРЅРѕ
+	--, INVENTSUM.ReservOrdered	-- Р—Р°СЂРµР·РµСЂРІРёСЂРѕРІР°РЅРѕ РІ Р·Р°РєР°Р·Р°РЅРЅС‹С…
+--	, INVENTSUM.OnOrder		-- Р—Р°РєР°Р·Р°РЅРѕ
+--	, INVENTSUM.Ordered		-- Р—Р°РєР°Р·Р°РЅРѕ
+	--, INVENTSUM.Registered	-- Р—Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРѕ
+	--, INVENTSUM.Picked		-- РЎРєРѕРїР»РµРєС‚РѕРІР°РЅРѕ
+	--, INVENTSUM.PhysicalValue	-- Р¤РёР·. СЃСѓРјРјР°
+	--, INVENTSUM.Arrived		-- РџСЂРёР±С‹Р»Рѕ
+	--, INVENTSUM.PhysicalInvent -- Р¤РёР·РёС‡РµСЃРєРёРµ Р·Р°РїР°СЃС‹
+	--, INVENTSUM.ClosedQty		-- Р¤РёР·РёС‡РµСЃРєРѕРµ РѕС‚РєСЂС‹С‚РѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ
+	--, INVENTSUM.PostedValueSecCur_RU	-- Р¤РёРЅ. СЃСѓРјРјР°
+	--, INVENTSUM.PhysicalValueSecCur_RU -- Р¤РёР·. СЃСѓРјРјР°
 --	,PurchRealPriceTable.RECID
 --	,PurchRealPriceTable.DATAAREAID
-	,PurchRealPriceTable.PurchRealPrice as РВЦ_прихода
-	,CONVERT(date,InventBatch.arrivalDate,103) as Дата_прихода_товара_с_партии
+	,PurchRealPriceTable.PurchRealPrice as Р Р’Р¦_РїСЂРёС…РѕРґР°
+	,CONVERT(date,InventBatch.arrivalDate,103) as Р”Р°С‚Р°_РїСЂРёС…РѕРґР°_С‚РѕРІР°СЂР°_СЃ_РїР°СЂС‚РёРё
 	from INVENTSUM
 	LEFT JOIN INVENTDIM			ON INVENTSUM.INVENTDIMID = INVENTDIM.INVENTDIMID
 	LEFT JOIN InventBatch		ON INVENTDIM.INVENTBATCHID = InventBatch.INVENTBATCHID
@@ -61,15 +61,16 @@ select DISTINCT
 	--	AND INVENTTRANS.ITEMID = VendInvoiceTrans.ITEMID
 	--LEFT JOIN VendInvoiceJour	ON VendInvoiceTrans.PURCHID = VendInvoiceJour.PURCHID
 WHERE INVENTSUM.DATAAREAID = 'SZ'
-	AND INVENTSUM.Closed = 0 
-	AND INVENTSUM.ITEMID		IN ('22140')
---	ANd  INVENTDIM.INVENTLOCATIONID = 'МР_СкладПродаж'	
+--	AND INVENTSUM.Closed = 0 
+--	AND 
+AND	INVENTSUM.ITEMID		IN ('51790')
+--	ANd  INVENTDIM.INVENTLOCATIONID = 'РњР _РЎРєР»Р°РґРџСЂРѕРґР°Р¶'	
 --	AND INVENTSUM.AvailPhysical > 0
 --	AND INVENTDIM.InventDimId IN ('06839165_131','06839308_131')
-	AND INVENTDIM.INVENTLOCATIONID IN ('СкладПродаж')
---	AND INVENTDIM.DEPARTMENTID = 'Комм'
+--	AND INVENTDIM.INVENTLOCATIONID IN ('РЎРєР»Р°РґРџСЂРѕРґР°Р¶')
+--	AND INVENTDIM.DEPARTMENTID = 'РљРѕРјРј'
 --	AND InventDim.InventExpireDate < N'2022-12-31T00:00:00.000'
-	AND INVENTSUM.AvailPhysical <> 0
+--	AND INVENTSUM.AvailPhysical <> 0
 ORDER BY 1,2
 --09712560_131
 --09712560_131
