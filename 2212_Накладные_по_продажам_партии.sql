@@ -10,23 +10,27 @@ order by 2
 */
 
 select RContractTable.DATAAREAID 
-	,CustInvoiceJour.SALESID
+--	,CustInvoiceJour.SALESID
 	--,CASE 
 	--	WHEN CustInvoiceJour.SZ_InventTransfer = '0' THEN 'Нет'
 	--	WHEN CustInvoiceJour.SZ_InventTransfer = '1' THEN 'Да'
 	-- END as Перемещение_по_накл
-	--,CONVERT(date,InventBatch.arrivalDate,103) as Дата_прихода_партии
+
 	--,InventBatch.SZ_VendAccount
 	--,VENDTABLE.NAME
 --	,CustInvoiceTrans.InvoiceId as Код_Накладной_DAX
 	,CustInvoiceJour.INVOICEEXTERNALID
+	,CONVERT(date,CustInvoiceJour.INVOICEDATE,103) as Дата_накл
 	,CustInvoiceTrans.LineNUM
 --	,InventTrans.INVENTTRANSID
 	,InventTrans.ITEMID
 	,InventTrans.Storno_RU
 --	,CustInvoiceTrans.QTY as InvoiceTransQTY
 --	,InventTrans.QTY
+	,InventTrans.INVENTDIMID
 	,InventDim.INVENTBATCHID 
+	,InventTrans.TransRefId
+	,CONVERT(date,InventBatch.arrivalDate,103) as Дата_прихода_партии
 	,SUM(CAST(InventTrans.QTY as int)) OVER (PARTITION BY CustInvoiceTrans.InvoiceId,CustInvoiceTrans.LineNUM) as Кол_во_в_строке_накладной
 	--,CASE
 	--	WHEN INVENTTRANS.STATUSISSUE = 0 THEN ''
@@ -59,7 +63,7 @@ JOIN CustInvoiceTrans	ON CustInvoiceJour.INVOICEID = CUSTINVOICETRANS.INVOICEID
 	AND CustInvoiceJour.INVOICEDATE			= CUSTINVOICETRANS.INVOICEDATE
 	AND CustInvoiceJour.NUMBERSEQUENCEGROUP = CUSTINVOICETRANS.NUMBERSEQUENCEGROUP
 	AND CustInvoiceJour.DATAAREAID			= CUSTINVOICETRANS.DATAAREAID
-	AND CustInvoiceJour.creaTEDDATETIME > '2022-12-31T00:00:00.000'
+--	AND CustInvoiceJour.creaTEDDATETIME > '2022-11-31T00:00:00.000'
 --	AND CUSTINVOICETRANS.INVOICEID IN ('0312674','00001153_094')
 JOIN SALESTABLE on CustInvoiceJour.salesid = SALESTABLE.salesid
 JOIN RContractTable		ON CustInvoiceJour.RContractAccount = RContractTable.RContractAccount
@@ -81,9 +85,9 @@ JOIN InventBatch		ON InventDim.INVENTBATCHID = InventBatch.inventBatchId
 JOIN VENDTABLE			ON InventBatch.SZ_VendAccount = VENDTABLE.ACCOUNTNUM
 	AND VENDTABLE.DATAAREAID = 'vir'
 	AND InventBatch.SZ_VendAccount = 'П006033'
-ORDER BY 2,3,4
+--	AND InventDim.INVENTBATCHID IN ('00101260_105-05836723_130','00101627_105-05836749_130')
+ORDER BY 10,3,4
  
-
 
 
 
