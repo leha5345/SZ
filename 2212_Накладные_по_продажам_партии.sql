@@ -18,9 +18,9 @@ select RContractTable.DATAAREAID
 
 	--,InventBatch.SZ_VendAccount
 	--,VENDTABLE.NAME
---	,CustInvoiceTrans.InvoiceId as Код_Накладной_DAX
+	,CustInvoiceTrans.InvoiceId as Код_Накладной_DAX
 	,CustInvoiceJour.INVOICEEXTERNALID
-	,CONVERT(date,CustInvoiceJour.INVOICEDATE,103) as Дата_накл
+	,CONVERT(date,CustInvoiceJour.INVOICEDATE,103) as Дата_накладной
 	,CustInvoiceTrans.LineNUM
 --	,InventTrans.INVENTTRANSID
 	,InventTrans.ITEMID
@@ -32,6 +32,8 @@ select RContractTable.DATAAREAID
 	,InventTrans.TransRefId
 	,CONVERT(date,InventBatch.arrivalDate,103) as Дата_прихода_партии
 	,SUM(CAST(InventTrans.QTY as int)) OVER (PARTITION BY CustInvoiceTrans.InvoiceId,CustInvoiceTrans.LineNUM) as Кол_во_в_строке_накладной
+	,CAST(CUSTINVOICETRANS.QTY as int) as CUSTINVOICETRANSQTY
+	,SUM(CAST(InventTrans.QTY as int)) OVER (PARTITION BY CustInvoiceTrans.InvoiceId) as Кол_во_в_накладной
 	--,CASE
 	--	WHEN INVENTTRANS.STATUSISSUE = 0 THEN ''
 	--	WHEN INVENTTRANS.STATUSISSUE = 1 THEN 'Продано'
@@ -42,13 +44,7 @@ select RContractTable.DATAAREAID
 	--	WHEN INVENTTRANS.STATUSISSUE = 6 THEN 'Заказано'
 	--	WHEN INVENTTRANS.STATUSISSUE = 7 THEN 'Расход по предложению'
 	-- END as INVENTTRANSSTATUS
-	, CustInvoiceTrans.SalesPrice as Цена_за_ед_изм
---	,CustInvoiceTrans.LineAmount
-	, CustInvoiceTrans.LineAmount / CustInvoiceTrans.Qty * InventTrans.QTY as Сумма_без_НДС
-	, CustInvoiceTrans.TAXAMOUNT / CustInvoiceTrans.Qty * InventTrans.QTY as Сумма_налога
-	, (CustInvoiceTrans.LineAmount / CustInvoiceTrans.Qty * InventTrans.QTY + CustInvoiceTrans.TAXAMOUNT / CustInvoiceTrans.Qty * InventTrans.QTY) as Сумма_с_налогом
-	,CAST(SalesTable.AmountTotalExclTax AS NUMERIC(20,2)) as Сумма_в_заказе_Без_НДС
-	,SUM(CustInvoiceTrans.LineAmount / CustInvoiceTrans.Qty * InventTrans.QTY) OVER (PARTITION BY SALESTABLE.salesid)  as Расчетная_сумма_по_заказу_БезНДС
+
 --	, CustInvoiceTrans.TaxItemGroup as Налоговая_группа
 	--, CASE 
 	--	WHEN InventTable.ItemType = '0' THEN 'Номенклатура' 
@@ -86,7 +82,7 @@ JOIN VENDTABLE			ON InventBatch.SZ_VendAccount = VENDTABLE.ACCOUNTNUM
 	AND VENDTABLE.DATAAREAID = 'vir'
 	AND InventBatch.SZ_VendAccount = 'П006033'
 --	AND InventDim.INVENTBATCHID IN ('00101260_105-05836723_130','00101627_105-05836749_130')
-ORDER BY 10,3,4
+ORDER BY 2
  
 
 
