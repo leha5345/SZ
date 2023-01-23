@@ -8,7 +8,7 @@ SELECT		TABLE_NAME AS [Имя таблицы],
 WHERE table_name='InventDim'
 order by 2
 */
-
+--
 select RContractTable.DATAAREAID 
 --	,CustInvoiceJour.SALESID
 	--,CASE 
