@@ -1,0 +1,127 @@
+﻿USE [W_test]
+GO
+
+/****** Object:  View [dbo].[KTgroupline]    Script Date: 24.05.2023 11:36:17 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+
+
+
+
+--EXEC sp_help bCUSTTABLE
+
+--DECLARE @CREATEDDATETIME DATETIME, @DATAAREAID nvarchar(4);
+--	SET @CREATEDDATETIME = '2021-12-31T00:00:00.000';
+--	SET @DATAAREAID = 'SZ';
+-- создание view
+--SELECT * FROM KTgroupline 
+
+CREATE view [dbo].[KTgroupline]
+as
+
+select DISTINCT bTenderTable.ResponsibleManagerId as Ответственный_менеджер
+	,isnull(bRContractTable.DIMENSION6_,0) as ЦФО
+--	bTENDERPREREQUESTPARTICIPA31117.PREREQUESTPARTICIPATETABLEID
+--	,bTENDERPREREQUESTPARTICIPA31117.VERSION
+	,bCUSTTABLE.ACCOUNTNUM as Код_клиента
+	,bCUSTTABLE.NAMEALIAS as Имя_клиента
+	,bTENDERPREREQUESTPARTICIPA31117.TenderTableID as Код_КТ
+	,CASE
+		WHEN bTenderTable.LOTSTATUS = 0 THEN 'Создан'
+		WHEN bTenderTable.LOTSTATUS = 10 THEN 'Отклонен'
+		WHEN bTenderTable.LOTSTATUS = 15 THEN 'Подана заявка'
+		WHEN bTenderTable.LOTSTATUS = 20 THEN 'Проигран'
+		WHEN bTenderTable.LOTSTATUS = 25 THEN 'Выигран'
+		WHEN bTenderTable.LOTSTATUS = 26 THEN 'Протокол разногласий'
+		WHEN bTenderTable.LOTSTATUS = 30 THEN 'Подписан'
+		WHEN bTenderTable.LOTSTATUS = 35 THEN 'Заключен контракт'
+		WHEN bTenderTable.LOTSTATUS = 37 THEN 'Исполнение'
+		WHEN bTenderTable.LOTSTATUS = 40 THEN 'Все отгружено'
+		WHEN bTenderTable.LOTSTATUS = 45 THEN 'Закрыто'
+		WHEN bTenderTable.LOTSTATUS = 50 THEN 'Претензия'
+	 END as Статус
+	,bTenderTable.TRADINGCODE as Номер_закупа
+	--,CASE
+	--	WHEN bTenderTable.TenderExecutionControlShip = 0 THEN 'Количество'
+	--	WHEN bTenderTable.TenderExecutionControlShip = 1 THEN 'Сумма'
+	-- END as Контроль_исполнения
+	,bTENDERPREREQUESTPARTICIPA31116.TENDERLINENum as Код_строки_КТ
+	,bInventTable.ProdVendName as Производитель 
+	,bTENDERLINE.ITEMID	as Код_товара
+	,bInventTable.TenderInventInternationalName as MNN
+	,bInventTable.ItemName as Наименование_номенклатуры
+	,CAST(bTENDERLINE.ARRIVALPRICE AS NUMERIC(20,2)) as Цена_прихода
+	,CAST(bTENDERLINE.REALINPUTPRICE AS NUMERIC(20,2)) as РВЦ
+	,CAST(bTENDERPREREQUESTPARTICIPA31116.REQUESTPARTICIPATEQTY AS int) as Предв_заявке
+	,isnull(CAST(SLINE.SalesQty AS INT),0) as Заказ
+	,CAST((bTENDERPREREQUESTPARTICIPA31116.REQUESTPARTICIPATEQTY + isnull(SLINE.SalesQty,0))AS int) as Недогрузы
+	,isnull(bRContractTable.DATAAREAID,0) as Компания_дог
+	,isnull(bRContractTable.RContractAccount,0) as Рег_номер_дог
+	,isnull(bRContractTable.RContractNumber,0) as Номер_дог
+	,CONVERT(date,bRContractTable.CONTRACTSTARTDATE,103) as Дата_начала_дог
+	,CONVERT(date,bRContractTable.ContractEndDate,103) as Дата_окончания_дог
+
+from bTENDERPREREQUESTPARTICIPA31117	
+JOIN bTENDERPREREQUESTPARTICIPA31116 ON bTENDERPREREQUESTPARTICIPA31117.VERSION = bTENDERPREREQUESTPARTICIPA31116.VERSION
+	AND bTENDERPREREQUESTPARTICIPA31117.PREREQUESTPARTICIPATETABLEID = bTENDERPREREQUESTPARTICIPA31116.PREREQUESTPARTICIPATETABLEID
+	AND bTENDERPREREQUESTPARTICIPA31117.ActiveVersion = 1
+JOIN bTENDERLINE ON bTENDERPREREQUESTPARTICIPA31116.TENDERLINENum = bTENDERLINE.LINENUM
+--	AND bTENDERLINE.CREATEDDATETIME > '2021-12-31T00:00:00.000'
+JOIN bTenderTable ON bTENDERLINE.TenderTableID = bTenderTable.TenderTableID
+--	AND bTenderTable.LOTSTATUS = 37 -- Исполнение
+	AND bTenderTable.DEPARTMENTID = 'Госп'
+--LEFT JOIN TenderExtendedProperties ON bTenderTable.TenderTableID = TenderExtendedProperties.TenderTableID --контроль исполнения
+JOIN bInventTable ON bTENDERLINE.ITEMID = bInventTable.ITEMID
+JOIN bCUSTTABLE ON bTenderTable.CustAccount = bCUSTTABLE.ACCOUNTNUM
+LEFT JOIN bRContractTable ON bTENDERPREREQUESTPARTICIPA31117.TenderTableID = bRContractTable.TenderTableID
+	AND bRContractTable.ContractEndDate > = DATEFROMPARTS(YEAR(DATEADD(YEAR, -1, GETDATE())), 07, 1)
+--	and bRContractTable.RContractAccount
+--	AND bRContractTable.DIMENSION6_ = 'ЦФО17.1.2'
+LEFT JOIN (
+
+		select 
+			bSALESLINE.SALESID
+			,bSALESLINE.TENDERLINENum
+			,bSALESLINE.ITEMID
+			,bSALESLINE.INVENTTRANSID
+			--,CASE
+			--	WHEN bINVENTTRANS.STATUSISSUE = 0 THEN ''
+			--	WHEN bINVENTTRANS.STATUSISSUE = 1 THEN 'Продано'
+			--	WHEN bINVENTTRANS.STATUSISSUE = 2 THEN 'Отпущено'
+			--	WHEN bINVENTTRANS.STATUSISSUE = 3 THEN 'Скоплектовано'
+			--	WHEN bINVENTTRANS.STATUSISSUE = 4 THEN 'Физ.резерв'
+			--	WHEN bINVENTTRANS.STATUSISSUE = 5 THEN 'Резерв.в.заказах'
+			--	WHEN bINVENTTRANS.STATUSISSUE = 6 THEN 'Заказано'
+			--	WHEN bINVENTTRANS.STATUSISSUE = 7 THEN 'Расход по предложению'
+			-- END
+			 ,bINVENTTRANS.QTY
+			 ,SUM(bINVENTTRANS.QTY) OVER (PARTITION BY bSALESLINE.TENDERLINENum ORDER BY bSALESLINE.TENDERLINENum) as SalesQty
+		from bSALESLINE
+		JOIN bINVENTTRANS ON bSALESLINE.INVENTTRANSID = bINVENTTRANS.INVENTTRANSID
+			AND bINVENTTRANS.DATAAREAID	= bSALESLINE.DATAAREAID
+			AND bINVENTTRANS.TransRefId	= bSALESLINE.SALESID
+			AND bINVENTTRANS.ITEMID		= bSALESLINE.ITEMID
+			AND bINVENTTRANS.TransType	= 0
+		WHERE bINVENTTRANS.DATAAREAID = 'SZ'
+			AND bSALESLINE.CREATEDDATETIME > DATEFROMPARTS(YEAR(DATEADD(YEAR, -1, GETDATE())), 01, 1)
+--		AND bSALESLINE.TENDERLINENum = '073167_268_0002'
+
+		) as SLINE ON bTENDERLINE.LINENUM = SLINE.TENDERLINENum
+--WHERE bTENDERPREREQUESTPARTICIPA31117.TenderTableID = '075244_268'
+
+
+
+
+
+
+
+
+GO
+
+
