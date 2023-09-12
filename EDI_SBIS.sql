@@ -186,9 +186,9 @@ WHERE --VendParmCTE.DATAAREAID IS NOT NULL
 --	AND 
 	EDIPackageCTE.SF_SUM = 1
 	AND EDIPackageCTE.Статус = 'Утверждено'
-	AND VendInvoiceJourCTE.INVOICEACCOUNT IN ('П001037','П004572') --ОЗОН
+	AND VendInvoiceJourCTE.INVOICEACCOUNT IN ('П000983','П005577','П006889')
 --	AND	EDIPackageCTE.DOCUMENTNUM IN ('ЦБ-4244','00012539')
-ORDER BY 17 -- сортировка по дате документа 17
+ORDER BY 8 -- сортировка по дате документа 17
 --SELECT * FROM EDIPackage WHERE DocumentNum = '8506738085'
 
 --SELECT * FROM SQLDICTIONARY WHERE TABLEID = 50351
